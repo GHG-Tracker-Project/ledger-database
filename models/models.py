@@ -97,9 +97,14 @@ class Actor(SQLModel, table=True):
     Attributes:
         id: Unique identifier for the actor.
         name: Human-readable name of the actor. 
-            - For countries, we use the ISO 3166-1 alpha-2 code. 
-            - For sub-national regions like states and provinces, we use the ISO 3166-2 code
-            - For cities, we use the UN/LOCODE
+
+            - For countries, use the
+              [ISO 3166-1 alpha-2 code](https://www.iso.org/obp/ui/#iso:pub:PUB500001:en).
+            - For subnational regions, such as states and provinces, use the
+              [ISO 3166-2 code](https://www.iso.org/obp/ui/#iso:pub:PUB500002:en).
+            - For cities, use the
+              [UN/LOCODE](https://unece.org/trade/cefact/unlocode-code-list-country).
+              
         is_part_of: ID of the parent actor, if applicable. (e.g. US-NY is_part_of US)
         type: Geographic or political type of the actor.
         datasource_id: ID of the source providing the actor data.
