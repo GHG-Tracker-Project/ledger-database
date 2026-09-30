@@ -92,6 +92,15 @@ class DataSource(SQLModel, table=True):
 
 # table to track actors (country, subnational, city)
 class Actor(SQLModel, table=True):
+    """Represents a geographic or political entity.
+
+    Attributes:
+        id: Unique identifier for the actor.
+        name: Human-readable name of the actor.
+        is_part_of: ID of the parent actor, if applicable.
+        type: Geographic or political type of the actor.
+        datasource_id: ID of the source providing the actor data.
+    """
     id: str = Field(primary_key=True)
     name: str
     is_part_of: Optional[str] = Field(default=None, foreign_key="actor.id")
