@@ -67,6 +67,19 @@ class GasType(str, Enum):
 
 # track external data sources for actor, emissions, targets, and contexual data
 class DataSource(SQLModel, table=True):
+    """Data source table
+
+    Attributes:
+        id: Unique identifier 
+        name: name of the data source
+        publisher: publisher of the data source
+        published_date: date data set was published
+        version: data source version
+        url: URL data source was downloaded from
+        created_at: date record was created
+        updated_at: date record was last updated
+    )
+    """
     id: str = Field(primary_key=True)
     name: str
     publisher: Optional[str]
@@ -104,7 +117,7 @@ class Actor(SQLModel, table=True):
               [ISO 3166-2 code](https://www.iso.org/obp/ui/#iso:pub:PUB500002:en).
             - For cities, use the
               [UN/LOCODE](https://unece.org/trade/cefact/unlocode-code-list-country).
-              
+
         is_part_of: ID of the parent actor, if applicable. (e.g. US-NY is_part_of US)
         type: Geographic or political type of the actor.
         datasource_id: ID of the source providing the actor data.
@@ -142,6 +155,16 @@ class Actor(SQLModel, table=True):
 
 
 class GWP(SQLModel, table=True):
+    """Global Warming Potential
+
+    Attributes:
+        id: Unique identifier for the actor.
+        gwp: global warming potential
+        time_horizon: time horizon of the GWP (e.g. 100 years)
+        gas: gas the GWP is for
+        assessment_report: AR1, AR2, AR3, AR4, or AR5
+        datasource_id: ID of the source providing the actor data.
+    """
     id: str = Field(primary_key=True)
     gwp: float
     time_horizon: int
@@ -166,6 +189,17 @@ class GWP(SQLModel, table=True):
 
 
 class Sector(SQLModel, table=True):
+    """Emissions Sector, subsector, and subcategories
+
+    Attributes:
+        id: unique id
+        code: sector code 
+        parent_code: parent code that the sector belongs to
+        name: name of the sector, subsector, category, etc.
+        taxonomy: sector schema used (e.g. IPCC)
+        description: description of the sector field
+        datasource_id: data source sector information came from
+    """
     id: str = Field(primary_key=True)
     code: str
     parent_code: Optional[str]
@@ -193,6 +227,12 @@ class Sector(SQLModel, table=True):
 # to create a sector dag
 # useful if a sector belongs to multiple parent categories
 class SectorRelation(SQLModel, table=True):
+    """Relationship between sectors. For instance parent child relationships.
+
+    Attributes:
+        parent_id: str = Field(foreign_key="sector.id", primary_key=True)
+        child_id: str = Field(foreign_key="sector.id", primary_key=True)
+    """
     parent_id: str = Field(foreign_key="sector.id", primary_key=True)
     child_id: str = Field(foreign_key="sector.id", primary_key=True)
 
@@ -206,6 +246,20 @@ class SectorRelation(SQLModel, table=True):
 
 # raw emissions for each gas and sector
 class Emissions(SQLModel, table=True):
+    """Emissions table
+
+    Attributes:
+        id: Unique identifier 
+        actor_id: actor responsible for the emissions
+        gas: gas
+        sector_id: sector emissions are from
+        year: year emissions released
+        emissions: emissions value
+        units: units of emissions (should be same for all)
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     actor_id: str = Field(foreign_key="actor.id")
     gas: GasType
@@ -235,6 +289,21 @@ class Emissions(SQLModel, table=True):
 # in units of CO2e
 # do I even want to include this?
 class EmissionsCO2e(SQLModel, table=True):
+    """Emissions in CO2-equivalent units
+
+    Attributes:
+        id: Unique identifier 
+        actor_id: actor responsible for the emissions
+        gas: gas
+        gwp_id: global warming potential used
+        sector_id: sector emissions are from
+        year: year emissions released
+        emissions: emissions value
+        units: units of emissions (should be same for all)
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     actor_id: str = Field(foreign_key="actor.id")
     sector_id: str = Field(foreign_key="sector.id")
@@ -263,6 +332,21 @@ class EmissionsCO2e(SQLModel, table=True):
 
 
 class EmissionsTotalSector(SQLModel, table=True):
+    """Emissions aggregated across sector
+
+    Attributes:
+        id: Unique identifier 
+        actor_id: actor responsible for the emissions
+        sector_id: sector emissions are from
+        year: year emissions released
+        emissions: emissions value
+        assessment_report: assement report used to calculate GWP
+        gases_included: string with gases included in the sector
+        units: units of emissions (should be same for all)
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     actor_id: str = Field(foreign_key="actor.id")
     sector_id: str = Field(foreign_key="sector.id")
@@ -290,6 +374,21 @@ class EmissionsTotalSector(SQLModel, table=True):
 
 
 class EmissionsTotalCO2e(SQLModel, table=True):
+    """Total Emissions in CO2-equivalent units
+
+    Attributes:
+        id: Unique identifier 
+        actor_id: actor responsible for the emissions
+        year: year emissions released
+        emissions: emissions value
+        aggregation_type: either  "total" or "total_ex_lulucf" (which excluded LULUCF sector)
+        assessment_report: assement report used to calculate GWP
+        gases_included: string with gases included in the sector
+        units: units of emissions (should be same for all)
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     actor_id: str = Field(foreign_key="actor.id")
     year: int
@@ -317,6 +416,20 @@ class EmissionsTotalCO2e(SQLModel, table=True):
 
 
 class Targets(SQLModel, table=True):
+    """Emissions Targets Table
+
+    Attributes:
+        id: Unique identifier 
+        actor_id: actor with the target
+        target_type: either "absolute_reduction" or "target_reduction" (more can be added)
+        target_value: reduction value
+        target_year: year target is to be achieved
+        baseline_year: year whose emissions are used as a baseline for the target_value
+        url: URL for the target
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     actor_id: str = Field(foreign_key="actor.id")
     target_type: TargetType
@@ -352,6 +465,17 @@ class Targets(SQLModel, table=True):
 
 
 class GDP(SQLModel, table=True):
+    """Gross Domestic Product
+
+    Attributes:
+        id: Unique identifier 
+        year: year of GDP
+        actor_id: actor with the GDP
+        gdp: GDP value in dollars
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     year: int
     actor_id: str = Field(foreign_key="actor.id")
@@ -375,6 +499,17 @@ class GDP(SQLModel, table=True):
 
 
 class Population(SQLModel, table=True):
+    """Gross Domestic Product
+
+    Attributes:
+        id: Unique identifier 
+        year: year of population
+        actor_id: actor with the population
+        population: population of actor in given year
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     year: int
     actor_id: str = Field(foreign_key="actor.id")
@@ -398,6 +533,20 @@ class Population(SQLModel, table=True):
 
 
 class EnergyConsumption(SQLModel, table=True):
+    """Energy Consumption
+
+    Attributes:
+        id: Unique identifier 
+        year: year of GDP
+        actor_id: actor with the GDP
+        consumption: energy consumption data
+        units: units of energy consumption (e.g. TJ, GwH, ...)
+        fuel_type: e.g. coal, solar, oil
+        energy_source: either "fossil" or "renewable"
+        datasource_id: data source where data came from
+        created_at: date record was created
+        updated_at: date record was last updated
+    """
     id: str = Field(primary_key=True)
     year: int
     actor_id: str = Field(foreign_key="actor.id")
