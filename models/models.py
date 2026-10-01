@@ -19,6 +19,16 @@ from datetime import datetime
 
 
 class ActorType(str, Enum):
+    """Type of actor represented by an entity.
+
+    Attributes:
+        planet: A planetary-level entity.
+        country: A sovereign country.
+        territory: A dependent or non-sovereign territory.
+        adm1: A first-level administrative division, such as a state or province.
+        adm2: A second-level administrative division, such as a county or district.
+        city: A city or municipality.
+    """
     planet = "planet"
     country = "country"
     territory = "territory"
@@ -28,6 +38,16 @@ class ActorType(str, Enum):
 
 
 class AssessmentReport(str, Enum):
+    """IPCC Assessment Report edition
+
+    Attributes:
+        AR1: First Assessment Report.
+        AR2: Second Assessment Report.
+        AR3: Third Assessment Report.
+        AR4: Fourth Assessment Report.
+        AR5: Fifth Assessment Report.
+        AR6: Sixth Assessment Report.
+    """
     AR1 = "AR1"
     AR2 = "AR2"
     AR3 = "AR3"
@@ -37,16 +57,43 @@ class AssessmentReport(str, Enum):
 
 
 class TargetType(str, Enum):
+    """Type of emissions target.
+
+    Attributes:
+        absolute_reduction: A target defined by an absolute reduction in emissions.
+        target_reduction: A target defined as a reduction relative to a baseline or reference value.
+    """
     absolute_reduction = "absolute_reduction"
     target_reduction = "target_reduction"
 
 
 class AggregationType(str, Enum):
+    """Method used to aggregate emissions.
+
+    Attributes:
+        total: Total emissions across all sectors
+        total_ex_lulucf: Total emissions excluding LULUCF
+    """
     total = "total"
     total_ex_lulucf = "total_ex_lulucf"
 
 
 class GasType(str, Enum):
+    """Greenhouse gas or gas group used in emissions data.
+
+    Attributes:
+        CO2: Carbon dioxide.
+        CH4: Methane.
+        CH4_fossil: Fossil methane.
+        CH4_nonfossil: Non-fossil methane.
+        N2O: Nitrous oxide.
+        NF3: Nitrogen trifluoride.
+        SF6: Sulfur hexafluoride.
+        FGASES: Fluorinated gases.
+        HFCS: Hydrofluorocarbons.
+        PFCS: Perfluorocarbons.
+        KYOTOGHGS: Kyoto greenhouse gases.
+    """
     CO2 = "CO2"
     CH4 = "CH4"
     CH4_fossil = "CH4_fossil"
@@ -78,7 +125,6 @@ class DataSource(SQLModel, table=True):
         url: URL data source was downloaded from
         created_at: date record was created
         updated_at: date record was last updated
-    )
     """
     id: str = Field(primary_key=True)
     name: str
@@ -158,12 +204,14 @@ class GWP(SQLModel, table=True):
     """Global Warming Potential
 
     Attributes:
-        id: Unique identifier for the actor.
-        gwp: global warming potential
-        time_horizon: time horizon of the GWP (e.g. 100 years)
-        gas: gas the GWP is for
-        assessment_report: AR1, AR2, AR3, AR4, or AR5
-        datasource_id: ID of the source providing the actor data.
+        id: Unique identifier for this GWP record.
+        gwp: Global warming potential value.
+        time_horizon: Time horizon of the GWP, in years.
+        gas: Gas for which the GWP is reported. See
+            [GasType][models.GasType] for the supported gases.
+        assessment_report: Assessment report used for the GWP value.
+            See [AssessmentReport][models.AssessmentReport].
+        datasource_id: ID of the source providing the GWP data.
     """
     id: str = Field(primary_key=True)
     gwp: float
